@@ -105,7 +105,7 @@ main{max-width:520px;min-height:calc(100dvh - env(safe-area-inset-top,0px) - env
 .gbox{width:min(380px,100%);margin:auto}
 .jp{font-family:var(--serif);font-size:15px;letter-spacing:.5em;color:var(--accent-soft);margin-bottom:8px}
 .gname{font:500 34px/1.1 var(--serif);margin:12px 0 18px}
-.gate input[type=text],.gate input:not([type]),.gate input[type=password],.gate input[type=time]{width:100%;padding:14px 16px;margin-top:10px;border-radius:14px;border:1px solid var(--separator);background:var(--surface);color:var(--text-primary);font:inherit;font-size:16px;outline:none}
+.gate input[type=text],.gate input:not([type]),.gate input[type=password],.gate input[type=time],.gate input[type=date]{width:100%;padding:14px 16px;margin-top:10px;border-radius:14px;border:1px solid var(--separator);background:var(--surface);color:var(--text-primary);font:inherit;font-size:16px;outline:none}
 .gate input:focus{border-color:var(--accent)}
 .btn{width:100%;margin-top:8px;padding:14px;border-radius:14px;border:0;background:var(--accent);color:#fff;font:inherit;font-weight:500;font-size:15px;cursor:pointer}
 .btn.alt{background:transparent;border:1px solid var(--accent);color:var(--accent-soft)}
@@ -162,7 +162,7 @@ html[data-amoled="1"] .sky{background:radial-gradient(70% 38% at 108% 36%,rgba(v
 .sx,.mini,.btn,.gear,.dchips button{transition:transform .15s,background-color .2s}
 .sx:active,.mini:active,.btn:active,.gear:active,.dchips button:active{transform:scale(.94)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-</style>
+.ic p.nt{font-size:12.5px;color:var(--accent-soft);cursor:pointer;margin-top:6px}.item.clash .stt{color:#f4a3a8}.left.warn{animation:pls 2s ease-in-out infinite}@keyframes pls{50%{opacity:.45}}</style>
 </head>
 <body>
 <div class="boot" id="boot"><div class="bt">Inno-Vsion</div></div>
@@ -199,7 +199,10 @@ var DN=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 var DS=["Lun","Mar","Mié","Jue","Vie","Sáb"],DM={lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
 var MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 var sel=null;
-function f(x){var h=Math.floor(x/60),i=x%60,a=h>=12?"pm":"am";h=h%12||12;return h+":"+(i<10?"0":"")+i+" "+a}
+var TT={uni:{cur:"En clase ahora",nxt:"Siguiente clase",fin:"Clases terminadas",no:"Hoy sin clases",no2:"Sin clases hoy",ok:"Listo por hoy",fr:"Día libre",last:"Es tu última clase de hoy",out:"Sales a las",aft:"Después",pro:"Próxima clase",off:"Sin clase",live:"En curso",dn:"Terminada",u1:" CLASE",uN:" CLASES",ns:" SIN CLASE",em:"No hay clases este día",ph1:"Materia (ej. Matemática II)",ph2:"Profesor (ej. José Zavala)",hd:"Agrega tus clases"},
+work:{cur:"En turno ahora",nxt:"Siguiente turno",fin:"Turnos terminados",no:"Hoy sin turno",no2:"Sin turno hoy",ok:"Turno cumplido",fr:"Día libre",last:"Es tu último turno de hoy",out:"Sales a las",aft:"Después",pro:"Próximo turno",off:"Sin turno",live:"En turno",dn:"Terminado",u1:" TURNO",uN:" TURNOS",ns:" LIBRE",em:"No hay turnos este día",ph1:"Trabajo (ej. Tienda Central)",ph2:"Turno (ej. Mañana)",hd:"Agrega tus turnos"}};
+function T(){return TT[U&&U.type==="work"?"work":"uni"]}
+function f(x){x=x%1440;var h=Math.floor(x/60),i=x%60,a=h>=12?"pm":"am";h=h%12||12;return h+":"+(i<10?"0":"")+i+" "+a}
 function dur(x){x=Math.max(0,Math.ceil(x));var h=Math.floor(x/60),i=x%60;return h?h+" h "+i+" min":i+" min"}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function pad(n){return n<10?"0"+n:""+n}
@@ -208,9 +211,9 @@ function dateFor(dow,base){var x=new Date(base);x.setHours(12,0,0,0);x.setDate(x
 function offKey(ds,c){return ds+"|"+c.n+"|"+c.s}
 function isOff(ds,c){return !!(U&&U.off&&U.off[offKey(ds,c)])}
 function toggleOff(ds,c){if(!c)return;U.off=U.off||{};var k=offKey(ds,c);if(U.off[k])delete U.off[k];else U.off[k]=1;sv(U);render()}
-function prune(){if(!U.off)return;var t=dstr(new Date());Object.keys(U.off).forEach(function(k){if(k.slice(0,10)<t)delete U.off[k]});sv(U)}
-function day(d){var r=[];((U&&U.sched)||[]).forEach(function(c){if(c.d&&c.d[d])r.push({n:c.n,p:c.p,s:c.d[d][0],e:c.d[d][1]})});return r.sort(function(a,b){return a.s-b.s})}
-function nextDay(base){for(var k=1;k<=14;k++){var x=new Date(base);x.setHours(12,0,0,0);x.setDate(x.getDate()+k);var ds=dstr(x),l=day(x.getDay()).filter(function(c){return !isOff(ds,c)});if(l.length)return{d:x.getDay(),c:l[0],k:k}}}
+function prune(){var t=dstr(new Date());["off","ex"].forEach(function(o){if(U[o])Object.keys(U[o]).forEach(function(k){if(k.slice(0,10)<t)delete U[o][k]})});sv(U)}
+function day(d,ds){var r=[];((U&&U.sched)||[]).forEach(function(c){var q=c.d&&c.d[(d+6)%7];if(q&&q[1]>1440)r.push({n:c.n,p:c.p,s:0,e:q[1]-1440})});((U&&U.sched)||[]).forEach(function(c){if(c.d&&c.d[d])r.push({n:c.n,p:c.p,s:c.d[d][0],e:c.d[d][1]})});if(ds&&U&&U.ex&&U.ex[ds])U.ex[ds].forEach(function(c){r.push({n:c.n,p:c.p,s:c.s,e:c.e})});return r.sort(function(a,b){return a.s-b.s})}
+function nextDay(base){for(var k=1;k<=14;k++){var x=new Date(base);x.setHours(12,0,0,0);x.setDate(x.getDate()+k);var ds=dstr(x),l=day(x.getDay(),ds).filter(function(c){return !isOff(ds,c)});if(l.length)return{d:x.getDay(),c:l[0],k:k}}}
 var last={},shown=null,CK=null;
 function put(id,h){if(last[id]!==h){last[id]=h;$(id).innerHTML=h}}
 function txt(id,s){var e=$(id);if(e&&e.textContent!==s)e.textContent=s}
@@ -223,42 +226,42 @@ function render(){
   var N=new Date(),d=N.getDay(),H=N.getHours(),now=H*60+N.getMinutes()+N.getSeconds()/60,td=dstr(N);
   if(CK){var s=pad(H%12||12)+pad(N.getMinutes());for(var i=0;i<4;i++)setD(CK[i],s[i]);txt("ap",H>=12?"PM":"AM")}
   txt("date",DN[d]+", "+N.getDate()+" de "+MES[N.getMonth()]);
-  txt("meta",U?[U.career,U.section?"Sección "+U.section:""].filter(Boolean).join(" · "):"");
+  txt("meta",U?[U.career,U.section?(U.type==="work"?"":"Sección ")+U.section:""].filter(Boolean).join(" · "):"");
   txt("hello",(H<12?"Buenos días":H<19?"Buenas tardes":"Buenas noches")+(U?", "+U.name:""));
-  var L=day(d),A=L.filter(function(c){return !isOff(td,c)}),cur=null,nxt=null;
+  var L=day(d,td),A=L.filter(function(c){return !isOff(td,c)}),cur=null,nxt=null;
   A.forEach(function(c){if(now>=c.s&&now<c.e)cur=c;else if(now<c.s&&!nxt)nxt=c});
   var h="";
   if(cur){
-    h='<div class="tag"><span class="dot"></span>En clase ahora</div><div class="name">'+esc(cur.n)+'</div><div class="prof">'+esc(cur.p)+'</div><div class="range">'+f(cur.s)+' – '+f(cur.e)+'</div><div class="bar"><i id="pg"></i></div><div class="left" id="lf"></div>';
-    h+=nxt?'<div class="next">'+ICO+'<div>Después: <b>'+esc(nxt.n)+'</b><br>'+f(nxt.s)+'</div></div>':'<div class="next">'+ICO+'<div>Es tu última clase de hoy<br>Sales a las <b>'+f(cur.e)+'</b></div></div>';
+    h='<div class="tag"><span class="dot"></span>'+T().cur+'</div><div class="name">'+esc(cur.n)+'</div><div class="prof">'+esc(cur.p)+'</div><div class="range">'+f(cur.s)+' – '+f(cur.e)+'</div><div class="bar"><i id="pg"></i></div><div class="left" id="lf"></div>';
+    h+=nxt?'<div class="next">'+ICO+'<div>'+T().aft+': <b>'+esc(nxt.n)+'</b><br>'+f(nxt.s)+'</div></div>':'<div class="next">'+ICO+'<div>'+T().last+'<br>'+T().out+' <b>'+f(cur.e)+'</b></div></div>';
   }else if(nxt){
-    h='<div class="tag">Siguiente clase</div><div class="name">'+esc(nxt.n)+'</div><div class="prof">'+esc(nxt.p)+'</div><div class="range">'+f(nxt.s)+' – '+f(nxt.e)+'</div><div class="left" id="lf"></div>';
+    h='<div class="tag">'+T().nxt+'</div><div class="name">'+esc(nxt.n)+'</div><div class="prof">'+esc(nxt.p)+'</div><div class="range">'+f(nxt.s)+' – '+f(nxt.e)+'</div><div class="left" id="lf"></div>';
   }else{
     var nd=nextDay(N);
-    h='<div class="tag">'+(A.length?"Clases terminadas":L.length?"Hoy sin clases":"Sin clases hoy")+'</div><div class="name">'+(A.length?"Listo por hoy":"Día libre")+'</div>';
-    if(nd)h+='<div class="next">'+ICO+'<div>Próxima clase: <b>'+esc(nd.c.n)+'</b><br>'+(nd.k===1?"mañana":DN[nd.d])+' · '+f(nd.c.s)+'</div></div>';
+    h='<div class="tag">'+(A.length?T().fin:L.length?T().no:T().no2)+'</div><div class="name">'+(A.length?T().ok:T().fr)+'</div>';
+    if(nd)h+='<div class="next">'+ICO+'<div>'+T().pro+': <b>'+esc(nd.c.n)+'</b><br>'+(nd.k===1?"mañana":DN[nd.d])+' · '+f(nd.c.s)+'</div></div>';
   }
   put("hero",h);
-  if(cur){var pg=$("pg");if(pg)pg.style.width=((now-cur.s)/(cur.e-cur.s)*100)+"%";txt("lf","Termina en "+dur(cur.e-now))}
+  if(cur){var pg=$("pg");if(pg)pg.style.width=((now-cur.s)/(cur.e-cur.s)*100)+"%";txt("lf","Termina en "+dur(cur.e-now));var lf=$("lf");if(lf)lf.className="left"+(cur.e-now<=10?" warn":"")}
   else if(nxt)txt("lf","Empieza en "+dur(nxt.s-now));
   var v=(sel===null)?d:sel,mx=day(6).length?6:5,dh="";
   var db=$("dbs"),ind=$("ind");
   if(db.children.length!==mx){db.innerHTML="";for(i=1;i<=mx;i++)(function(i){var b=el("button","",DS[i-1]);b.onclick=function(){click2(i)};db.appendChild(b)})(i)}
   for(i=1;i<=mx;i++){var b=db.children[i-1];b.className=(i===v?"on ":"")+(i===d?"hoy":"");b.setAttribute("aria-pressed",i===v?"true":"false");if(i===d)b.setAttribute("aria-current","date");else b.removeAttribute("aria-current")}
   ind.style.width=(100/mx)+"%";ind.style.transform="translateX("+(Math.max(1,v)-1)*100+"%)";
-  var ds=v===d?td:dateFor(v,N),LV=day(v).map(function(c){c.x=isOff(ds,c);return c}),AV=LV.filter(function(c){return !c.x});
+  var ds=v===d?td:dateFor(v,N),LV=day(v,ds).map(function(c){c.x=isOff(ds,c);return c}),AV=LV.filter(function(c){return !c.x});
   shown={ds:ds,L:LV};
   var jb=$("jb");if(v===d&&AV.length){jb.hidden=false;$("jbi").style.width=Math.max(0,Math.min(100,(now-AV[0].s)/(AV[AV.length-1].e-AV[0].s)*100))+"%"}else jb.hidden=true;
   var sm=v===d?"HOY":DN[v].toUpperCase();
-  if(AV.length)sm+=" · "+AV.length+(AV.length>1?" CLASES":" CLASE")+" · "+f(AV[0].s)+" – "+f(AV[AV.length-1].e);
-  if(LV.length>AV.length)sm+=" · "+(LV.length-AV.length)+" SIN CLASE";
+  if(AV.length)sm+=" · "+AV.length+(AV.length>1?T().uN:T().u1)+" · "+f(AV[0].s)+" – "+f(AV[AV.length-1].e);
+  if(LV.length>AV.length)sm+=" · "+(LV.length-AV.length)+T().ns;
   put("sum",esc(sm));
-  var lh="";
+  var lh="",mxE=0;
   LV.forEach(function(c,i){
-    var st=(v!==d||c.x)?"":now>=c.e?"done":now>=c.s?"live":"";
-    if(i&&c.s-LV[i-1].e>=5){var g=c.s-LV[i-1].e;lh+='<div class="rec">Receso · '+(g<60?g+" min":Math.floor(g/60)+" h"+(g%60?" "+g%60+" min":""))+'</div>'}var sl=c.x?"Sin clase":st==="live"?"En curso":st==="done"?"Terminada":"";lh+='<div class="item '+st+(c.x?" off":"")+'" style="--hs:'+hs(c.n)+'"><div class="t">'+f(c.s)+'<br><span>'+f(c.e)+'</span></div><div class="ic">'+(sl?'<div class="stt"><i></i>'+sl+'</div>':'')+'<h3>'+esc(c.n)+'</h3>'+(c.p?'<p>'+esc(c.p)+'</p>':'')+'</div><button class="sx" data-i="'+i+'">'+(c.x?"Restaurar":"Sin clase")+'</button></div>';
+    var cl2=!c.x&&c.s<mxE;if(!c.x)mxE=Math.max(mxE,c.e);var st=(v!==d||c.x)?"":now>=c.e?"done":now>=c.s?"live":"";
+    if(i&&c.s-LV[i-1].e>=5){var g=c.s-LV[i-1].e;lh+='<div class="rec">Receso · '+(g<60?g+" min":Math.floor(g/60)+" h"+(g%60?" "+g%60+" min":""))+'</div>'}var sl=c.x?T().off:cl2?"Choque de horario":st==="live"?T().live:st==="done"?T().dn:"";lh+='<div class="item '+st+(c.x?" off":"")+(cl2?" clash":"")+'" style="--hs:'+hs(U.type==="work"&&c.p?c.p:c.n)+'"><div class="t">'+f(c.s)+'<br><span>'+f(c.e)+'</span></div><div class="ic">'+(sl?'<div class="stt"><i></i>'+sl+'</div>':'')+'<h3>'+esc(c.n)+'</h3>'+(c.p?'<p>'+esc(c.p)+'</p>':'')+'<p class="nt" data-nt="'+i+'">'+(U.nt&&U.nt[c.n]?'✎ '+esc(U.nt[c.n]):'＋ nota')+'</p></div><button class="sx" data-i="'+i+'">'+(c.x?"Restaurar":T().off)+'</button></div>';
   });
-  put("list",lh||'<div class="empty">No hay clases este día</div>');
+  put("list",lh||'<div class="empty">'+T().em+'</div>');
 }
 function click2(i){try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}var t=new Date().getDay(),pv=sel===null?t:sel,L=$("list");sel=(i===t||sel===i)?null:i;if(L){L.style.setProperty("--dx",(i>=pv?16:-16)+"px");L.classList.remove("sw1");void L.offsetWidth;L.classList.add("sw1");clearTimeout(click2.t);click2.t=setTimeout(function(){L.classList.remove("sw1")},700)}render()}
 (function(){var x0=0,y0=0;document.addEventListener("touchstart",function(e){var q=e.changedTouches[0];x0=q.clientX;y0=q.clientY},{passive:true});document.addEventListener("touchend",function(e){if($("app").hidden||(e.target.closest&&e.target.closest(".panel,.days")))return;var q=e.changedTouches[0],dx=q.clientX-x0,dy=q.clientY-y0;if(Math.abs(dx)<60||Math.abs(dy)>45)return;var v=sel===null?new Date().getDay():sel,mx=day(6).length?6:5,n=v+(dx<0?1:-1);if(n>=1&&n<=mx)click2(n)},{passive:true});document.addEventListener("visibilitychange",function(){document.documentElement.toggleAttribute("data-paused",document.hidden)})})();
@@ -277,9 +280,9 @@ function swatches(cur,fn){var s=el("div","sw");Object.keys(CL).forEach(function(
 function unlock(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume()}catch(e){}}
 function beep(){unlock();if(!ac)return;[0,.35,.7].forEach(function(o){var t=ac.currentTime+o,s=ac.createOscillator(),g=ac.createGain();s.frequency.value=880;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.3,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.3);s.connect(g);g.connect(ac.destination);s.start(t);s.stop(t+.32)})}
 function fire(t,b){var e=$("toast");e.innerHTML="";e.appendChild(el("b","",t));e.appendChild(document.createTextNode(b));e.className="toast show";e.onclick=function(){e.className="toast"};clearTimeout(fire.t);fire.t=setTimeout(function(){e.className="toast"},15000);beep();try{if(navigator.vibrate)navigator.vibrate([300,150,300,150,300])}catch(_){}try{if("Notification" in window&&Notification.permission==="granted")new Notification(t,{body:b})}catch(_){}}
-function alerts(){if(!U||!U.alerts)return;var N=new Date(),cm=N.getHours()*60+N.getMinutes(),dk=N.toDateString();day(N.getDay()).forEach(function(c){if(isOff(dstr(N),c))return;var k=dk+c.n+c.s;if(cm===c.s-(U.lead||0)&&!fired[k]){fired[k]=1;fire(c.n,(U.lead?"Empieza en "+U.lead+" min · ":"Empieza ahora · ")+f(c.s)+" – "+f(c.e)+" · "+c.p)}})}
+function alerts(){if(!U||!U.alerts)return;var N=new Date(),cm=N.getHours()*60+N.getMinutes(),dk=N.toDateString();day(N.getDay(),dstr(N)).forEach(function(c){if(isOff(dstr(N),c))return;var k=dk+c.n+c.s;if(cm===c.s-(U.lead||0)&&!fired[k]){fired[k]=1;fire(c.n,(U.lead?"Empieza en "+U.lead+" min · ":"Empieza ahora · ")+f(c.s)+" – "+f(c.e)+" · "+c.p+(U.nt&&U.nt[c.n]?" · "+U.nt[c.n]:""))}})}
 function tick(){render();alerts()}
-function start(){th(U.color);tm(U.mode||"dark");bgOn();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}if(!U.bk){U.bk=Date.now();sv(U)}else if(Date.now()-U.bk>2592e6)setTimeout(function(){toast("Respaldo recomendado","Exporta tu horario desde Ajustes")},2500);$("gate").hidden=true;$("app").hidden=false;$("panel").className="panel";last={};panelUI();buildClock();prune();$("list").onclick=function(e){var x=e.target.closest&&e.target.closest("[data-i]");if(x&&shown)toggleOff(shown.ds,shown.L[+x.getAttribute("data-i")])};render();if(!ticking){ticking=true;setInterval(tick,1000)}}
+function start(){th(U.color);tm(U.mode||"dark");bgOn();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}if(!U.bk){U.bk=Date.now();sv(U)}else if(Date.now()-U.bk>2592e6)setTimeout(function(){toast("Respaldo recomendado","Exporta tu horario desde Ajustes")},2500);$("gate").hidden=true;$("app").hidden=false;$("panel").className="panel";last={};panelUI();buildClock();prune();$("list").onclick=function(e){var y=e.target.closest&&e.target.closest("[data-nt]");if(y&&shown){var c=shown.L[+y.getAttribute("data-nt")],v=prompt("Nota para "+c.n,(U.nt&&U.nt[c.n])||"");if(v!==null){U.nt=U.nt||{};if(v.trim())U.nt[c.n]=v.trim().slice(0,80);else delete U.nt[c.n];sv(U);render()}return}var x=e.target.closest&&e.target.closest("[data-i]");if(x&&shown)toggleOff(shown.ds,shown.L[+x.getAttribute("data-i")])};render();if(!ticking){ticking=true;setInterval(tick,1000)}}
 function gateUI(){
   var g=$("gate"),u=ld(),pick=(u&&u.color)||"morado",md=(u&&u.mode)||"dark";
   th(pick);tm(md);$("app").hidden=true;g.innerHTML="";g.hidden=false;
@@ -292,23 +295,25 @@ function gateUI(){
   ck.type="checkbox";ck.checked=true;lb.appendChild(ck);lb.appendChild(document.createTextNode("Mantener sesión iniciada"));
   if(!u)b.appendChild(nm);
   b.appendChild(pw);
+  var ty="uni";if(!u){var tc=el("div","dchips"),tl=el("div","tag","¿Para qué es tu horario?");tl.style.cssText="text-align:center;margin-top:22px";[["uni","Universidad"],["work","Trabajo"]].forEach(function(q){var x=el("button",q[0]===ty?"on":"",q[1]);x.onclick=function(){ty=q[0];Array.prototype.forEach.call(tc.children,function(y){y.className=""});x.className="on"};tc.appendChild(x)});b.appendChild(tl);b.appendChild(tc)}
   if(!u){var t=el("div","tag","Elige tu color");t.style.cssText="text-align:center;margin-top:22px";b.appendChild(t);b.appendChild(swatches(pick,function(k){pick=k;th(k)}))}
   if(!u){var mb=el("button","mini","Modo: "+(md==="light"?"claro":"oscuro"));mb.onclick=function(){md=md==="light"?"dark":"light";tm(md);mb.textContent="Modo: "+(md==="light"?"claro":"oscuro")};b.appendChild(mb)}
   b.appendChild(lb);b.appendChild(er);b.appendChild(go);
   if(u){var lk=el("a","lnk","Olvidé mi clave · crear nuevo perfil");lk.onclick=function(){sv(null);gateUI()};b.appendChild(lk)}
+  if(!u){var rl=el("a","lnk","Ya tengo un respaldo · Restaurar"),rf=el("input");rf.type="file";rf.accept=".json,application/json";rf.hidden=true;b.appendChild(rf);rl.onclick=function(){rf.click()};rf.onchange=function(){var f0=rf.files[0];if(!f0)return;var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(j.v===2&&j.u&&j.u.hash){sv(j.u);gateUI();return}throw 0}catch(e){er.textContent="Ese archivo no es un respaldo completo"}};r.readAsText(f0)};b.appendChild(rl)}
   go.onclick=async function(){
     var p=pw.value;
     if(u){if(await H(p)!==u.hash){er.textContent="Clave incorrecta";pw.value="";return}u.rem=ck.checked;U=u;sv(U);enter();return}
     var n=nm.value.trim();
     if(!n){er.textContent="Escribe tu nombre";return}
     if(p.length<4){er.textContent="La clave debe tener al menos 4 caracteres";return}
-    U={name:n,hash:await H(p),color:pick,alerts:false,lead:0,rem:ck.checked,mode:md,sched:null};sv(U);enter();
+    U={name:n,hash:await H(p),color:pick,alerts:false,lead:0,rem:ck.checked,mode:md,sched:null,type:ty};sv(U);enter();
   };
   [nm,pw].forEach(function(i){i.onkeydown=function(e){if(e.key==="Enter")go.click()}});
 }
 function panelUI(){
   var p=$("panel");
-  p.innerHTML='<h4>Perfil</h4><input type="text" id="pn" maxlength="24" placeholder="Nombre"><input type="text" id="pc" maxlength="40" placeholder="Carrera (ej. TSU en Administración)"><input type="text" id="ps" maxlength="24" placeholder="Sección (ej. A)"><h4>Color</h4><div id="psw"></div><h4>Modo</h4><select id="pm"><option value="dark">Oscuro</option><option value="light">Claro</option><option value="auto">Automático</option><option value="black">Negro puro (AMOLED)</option></select><h4>Fondo</h4><div class="row"><span>Fondo animado</span><input type="checkbox" id="pb"></div><h4>Avisos de clase</h4><div class="row"><span>Activar avisos</span><input type="checkbox" id="ae"></div><div class="row" style="margin-top:10px"><span>Avisar</span><select id="al"><option value="0">Al empezar</option><option value="5">5 min antes</option><option value="10">10 min antes</option></select></div><p class="note">Suenan y aparecen mientras la app esté abierta.</p><button class="mini" id="ph">Cambiar horario</button><button class="mini" id="pe">Exportar horario</button><button class="mini" id="pi">Importar horario</button><button class="mini" id="pt">Probar aviso</button><button class="mini" id="po">Cerrar sesión</button>';
+  p.innerHTML='<h4>Tipo de horario</h4><select id="pty"><option value="uni">Universidad</option><option value="work">Trabajo</option></select><h4>Perfil</h4><input type="text" id="pn" maxlength="24" placeholder="Nombre"><input type="text" id="pc" maxlength="40" placeholder="Carrera (ej. TSU en Administración)"><input type="text" id="ps" maxlength="24" placeholder="Sección (ej. A)"><h4>Color</h4><div id="psw"></div><h4>Modo</h4><select id="pm"><option value="dark">Oscuro</option><option value="light">Claro</option><option value="auto">Automático</option><option value="black">Negro puro (AMOLED)</option></select><h4>Fondo</h4><div class="row"><span>Fondo animado</span><input type="checkbox" id="pb"></div><h4>Avisos de clase</h4><div class="row"><span>Activar avisos</span><input type="checkbox" id="ae"></div><div class="row" style="margin-top:10px"><span>Avisar</span><select id="al"><option value="0">Al empezar</option><option value="5">5 min antes</option><option value="10">10 min antes</option></select></div><p class="note">Suenan y aparecen mientras la app esté abierta.</p><button class="mini" id="ph">Cambiar horario</button><button class="mini" id="pe">Guardar respaldo</button><button class="mini" id="pi">Restaurar respaldo</button><button class="mini" id="pw">Ver semana</button><button class="mini" id="psh">Compartir horario</button><button class="mini" id="pt">Probar aviso</button><button class="mini" id="po">Cerrar sesión</button>';
   $("psw").appendChild(swatches(U.color,function(k){U.color=k;th(k);sv(U)}));
   var ae=$("ae"),al=$("al");ae.checked=!!U.alerts;al.value=String(U.lead||0);
   ae.onchange=function(){U.alerts=ae.checked;sv(U);unlock();try{if(ae.checked&&"Notification" in window&&Notification.permission==="default")Notification.requestPermission()}catch(e){}};
@@ -319,10 +324,11 @@ function panelUI(){
   var pn=$("pn"),pc=$("pc"),ps=$("ps"),pb=$("pb");pn.value=U.name||"";pc.value=U.career||"";ps.value=U.section||"";pb.checked=U.bg!==false;
   [[pn,"name"],[pc,"career"],[ps,"section"]].forEach(function(x){x[0].oninput=function(){var v=x[0].value.trim();if(x[1]==="name"&&!v)return;U[x[1]]=v;sv(U);render()}});
   pb.onchange=function(){U.bg=pb.checked;sv(U);bgOn()};
-  $("pe").onclick=function(){var a=el("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({v:1,sched:U.sched,off:U.off||{}})],{type:"application/json"}));a.download="horario-inno-vsion.json";U.bk=Date.now();sv(U);document.body.appendChild(a);a.click();a.remove()};
+  $("pe").onclick=function(){var a=el("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({v:2,u:U})],{type:"application/json"}));a.download="respaldo-horario-"+dstr(new Date())+".json";U.bk=Date.now();sv(U);document.body.appendChild(a);a.click();a.remove()};
   var fj=el("input");fj.type="file";fj.accept="application/json,.json";fj.hidden=true;p.appendChild(fj);
   $("pi").onclick=function(){fj.click()};
-  fj.onchange=function(){var f=fj.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result),S=j.sched;if(!Array.isArray(S)||!S.every(function(c){return c&&typeof c.n==="string"&&c.d&&typeof c.d==="object"}))throw 0;U.sched=S;U.off=j.off||{};sv(U);last={};render();toast("Horario importado",S.length+" clases cargadas")}catch(e){toast("No se pudo importar","El archivo no es un respaldo válido")}fj.value=""};r.readAsText(f)};
+  fj.onchange=function(){var f=fj.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(j.v===2&&j.u&&j.u.hash){U=j.u;U.rem=true;sv(U);last={};start();toast("Respaldo restaurado","Perfil, horarios y notas cargados");fj.value="";return}var S=j.sched;if(!Array.isArray(S)||!S.every(function(c){return c&&typeof c.n==="string"&&c.d&&typeof c.d==="object"}))throw 0;U.sched=S;U.off=j.off||{};U.ex=j.ex||{};sv(U);last={};render();toast("Horario importado",S.length+" clases cargadas")}catch(e){toast("No se pudo importar","El archivo no es un respaldo válido")}fj.value=""};r.readAsText(f)};
+  $("pw").onclick=weekUI;$("psh").onclick=function(){var o={sched:U.sched,ex:U.ex||{},type:U.type||"uni"},u=location.origin+location.pathname+"#h="+btoa(unescape(encodeURIComponent(JSON.stringify(o))));(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(function(){toast("Enlace copiado","Pégalo en WhatsApp para compartir tu horario")},function(){prompt("Copia este enlace",u)})};var pty=$("pty");function lab(){var w=U.type==="work";pc.placeholder=w?"Empresa o puesto (ej. Cajero en Tienda Central)":"Carrera (ej. TSU en Administración)";ps.placeholder=w?"Área o sucursal (ej. Caja)":"Sección (ej. A)"}pty.value=U.type==="work"?"work":"uni";lab();pty.onchange=function(){U.type=pty.value;sv(U);lab();last={};render()};
   $("gear").onclick=function(){p.classList.toggle("open")};
 }
 function tm(m){var x=m==="auto"?(window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):m;document.documentElement.setAttribute("data-m",x==="light"?"light":"dark");document.documentElement.setAttribute("data-amoled",x==="black"?"1":"0")}
@@ -336,46 +342,50 @@ async function readImg(file,st,add){
   try{
     var s=await getS();st.textContent="Leyendo tu horario…";
     var blob=await shrink(file);
-    var r=await s.json('Esta imagen es el horario de clases de un estudiante universitario (tabla: filas = asignaturas con su docente, columnas = días de la semana). Extrae TODAS las asignaturas. Responde SOLO con un arreglo JSON con este formato: [{"n":"Nombre de la asignatura","p":"Nombre del docente tal como aparece","d":{"1":["13:00","14:30"]}}]. En d, la clave es el día (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado) y el valor es [inicio,fin] en formato 24 horas HH:MM (convierte pm: 1:00 pm = 13:00). Una asignatura puede tener varios días. Omite los días sin clase. Si algo no se lee bien, haz tu mejor estimación.',{images:[blob],cache:false});
+    var r=await s.json((U.type==='work'?'Esta imagen es el horario de turnos de un trabajador (filas = trabajo o turno, columnas = días). Extrae TODOS los turnos; n es el nombre del trabajo y p el nombre del turno.':'Esta imagen es el horario de clases de un estudiante universitario (tabla: filas = asignaturas con su docente, columnas = días de la semana). Extrae TODAS las asignaturas.')+' Responde SOLO con un arreglo JSON con este formato: [{"n":"Nombre de la asignatura","p":"Nombre del docente tal como aparece","d":{"1":["13:00","14:30"]}}]. En d, la clave es el día (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado) y el valor es [inicio,fin] en formato 24 horas HH:MM (convierte pm: 1:00 pm = 13:00). Una asignatura puede tener varios días. Omite los días sin clase. Si algo no se lee bien, haz tu mejor estimación.',{images:[blob],cache:false});
     var S=(Array.isArray(r)?r:[]).map(function(c){var d={};Object.keys(c.d||{}).forEach(function(k){var a=hm(c.d[k][0]),e=hm(c.d[k][1]);if(a!=null&&e!=null&&e>a)d[k]=[a,e]});return{n:String(c.n||""),p:String(c.p||""),d:d}}).filter(function(c){return c.n&&Object.keys(c.d).length});
     if(!S.length){st.textContent="No pude leer clases en la foto. Prueba con una más clara o agrégalas a mano.";return}
     add(S);st.textContent="Listo. Revisa tus clases y toca Guardar horario.";
   }catch(e){st.textContent=e&&e.code==="not_granted"?"Necesito tu permiso para leer la foto.":"No pude leer la foto. Agrega tus clases a mano."}
 }
-function enter(){if(U.sched===undefined){U.sched=C;sv(U)}if(!U.sched)importUI();else start()}
+var SH=null;try{var hh=/^#h=(.+)/.exec(location.hash);if(hh){var sj=JSON.parse(decodeURIComponent(escape(atob(hh[1]))));if(Array.isArray(sj.sched))SH=sj}}catch(e){}
+function enter(){if(SH){if(confirm("Recibiste un horario compartido. ¿Cargarlo en tu perfil?")){U.sched=SH.sched;U.ex=SH.ex||{};U.type=SH.type||U.type;sv(U)}SH=null;try{history.replaceState(null,"",location.pathname)}catch(e){}}if(U.sched===undefined){U.sched=C;sv(U)}if(!U.sched)importUI();else start()}
 function importUI(){
-  var D=(U.sched||[]).slice(),days={};
+  var D=(U.sched||[]).slice(),days={},W=U.type==="work",X=JSON.parse(JSON.stringify(U.ex||{}));
   var g=$("gate");g.innerHTML="";g.hidden=false;$("app").hidden=true;
   var b=el("div","gbox");g.appendChild(b);
   var lg2=el("div","lg");lg2.innerHTML=MARK("mg2");b.appendChild(lg2);b.appendChild(el("div","tag","Tu horario"));
-  b.appendChild(el("div","gname","Agrega tus clases"));
-  var st=el("p","note","Escribe cada clase con su materia, profesor, días y hora. Si una materia tiene otra hora en otro día, agrégala de nuevo."),
+  b.appendChild(el("div","gname",T().hd));
+  var st=el("p","note",W?"Escribe tu trabajo, el turno, los días y la hora. Si otro día tienes otro turno, agrégalo de nuevo. Para un reemplazo, elige una fecha.":"Escribe cada clase con su materia, profesor, días y hora. Si una materia tiene otra hora en otro día, agrégala de nuevo."),
     fi=el("input"),pk=el("button","mini","Leer desde una foto"),ls=el("div","cls"),
     nm=el("input"),pf=el("input"),ds=el("div","dchips"),t1=el("input"),t2=el("input"),tr=el("div","trow"),
     add=el("button","btn alt","+ Agregar clase"),ok=el("button","btn","Guardar horario");
   fi.type="file";fi.accept="image/*";fi.hidden=true;pk.hidden=true;
-  nm.type="text";nm.placeholder="Materia (ej. Matemática II)";pf.type="text";pf.placeholder="Profesor (ej. José Zavala)";
+  nm.type="text";nm.placeholder=T().ph1;pf.type="text";pf.placeholder=T().ph2;
   t1.type="time";t2.type="time";t1.value="13:00";t2.value="14:30";
   for(var k=1;k<=6;k++)(function(k){var x=el("button","",DS[k-1]);x.onclick=function(){days[k]=!days[k];x.className=days[k]?"on":""};ds.appendChild(x)})(k);
   [["Desde",t1],["Hasta",t2]].forEach(function(p){var l=el("label","tl",p[0]);l.appendChild(p[1]);tr.appendChild(l)});
-  function draw(){ls.innerHTML="";D.forEach(function(c,i){var r=el("div","cl"),t=el("div");t.appendChild(el("b","",c.n));if(c.p)t.appendChild(el("span","",c.p));t.appendChild(el("span","",Object.keys(c.d).sort().map(function(k){return DS[k-1]+" "+f(c.d[k][0])+" – "+f(c.d[k][1])}).join(" · ")));var x=el("a","","✕");x.onclick=function(){D.splice(i,1);draw()};r.appendChild(t);r.appendChild(x);ls.appendChild(r)})}
+  function draw(){ls.innerHTML="";D.forEach(function(c,i){var r=el("div","cl"),t=el("div");t.appendChild(el("b","",c.n));if(c.p)t.appendChild(el("span","",c.p));t.appendChild(el("span","",Object.keys(c.d).sort().map(function(k){return DS[k-1]+" "+f(c.d[k][0])+" – "+f(c.d[k][1])}).join(" · ")));var x=el("a","","✕");x.onclick=function(){D.splice(i,1);draw()};r.appendChild(t);r.appendChild(x);ls.appendChild(r)});Object.keys(X).sort().forEach(function(k){X[k].forEach(function(c,i){var r=el("div","cl"),t=el("div");t.appendChild(el("b","",c.n));t.appendChild(el("span","",(c.p?c.p+" · ":"")+"Solo "+k+" · "+f(c.s)+" – "+f(c.e)));var x=el("a","","✕");x.onclick=function(){X[k].splice(i,1);if(!X[k].length)delete X[k];draw()};r.appendChild(t);r.appendChild(x);ls.appendChild(r)})})}
   draw();
-  [st,pk,fi,ls,nm,pf,ds,tr,add,ok].forEach(function(x){b.appendChild(x)});
+  var pr=el("div","dchips"),dl=el("p","note","Reemplazo de una sola fecha (opcional):"),dt=el("input");dt.type="date";
+  [["Mañana","06:00","14:00"],["Tarde","14:00","22:00"],["Partido","08:00","17:00"],["Noche","22:00","06:00"]].forEach(function(q){var x=el("button","",q[0]);x.onclick=function(){pf.value="Turno "+q[0].toLowerCase();t1.value=q[1];t2.value=q[2]};pr.appendChild(x)});
+  [st,pk,fi,ls,nm,pf].concat(W?[pr]:[],[ds,tr],W?[dl,dt]:[],[add,ok]).forEach(function(x){b.appendChild(x)});
   var er=function(m){st.textContent=m};
   add.onclick=function(){
     var n=nm.value.trim(),a=hm(t1.value),e=hm(t2.value),ks=Object.keys(days).filter(function(x){return days[x]});
     if(!n)return er("Escribe la materia.");
-    if(!ks.length)return er("Elige al menos un día.");
-    if(a==null||e==null||e<=a)return er("Revisa la hora: el fin debe ser después del inicio.");
-    var d={};ks.forEach(function(x){d[x]=[a,e]});
+    if(!ks.length&&!(W&&dt.value))return er("Elige al menos un día"+(W?" o una fecha.":"."));
+    if(a==null||e==null||(e<=a&&!W))return er("Revisa la hora: el fin debe ser después del inicio.");if(e<=a)e+=1440;
+    if(W&&dt.value){(X[dt.value]=X[dt.value]||[]).push({n:n,p:pf.value.trim(),s:a,e:e});dt.value="";draw();return er("Reemplazo agregado. Agrega otro o guarda.")}var d={};ks.forEach(function(x){d[x]=[a,e]});
     D.push({n:n,p:pf.value.trim(),d:d});nm.value="";pf.value="";days={};Array.prototype.forEach.call(ds.children,function(x){x.className=""});draw();er("Clase agregada. Agrega otra o guarda tu horario.");
   };
-  ok.onclick=function(){if(!D.length)return er("Agrega al menos una clase.");U.sched=D;sv(U);start()};
+  ok.onclick=function(){if(!D.length&&!Object.keys(X).length)return er(W?"Agrega al menos un turno.":"Agrega al menos una clase.");U.sched=D;U.ex=X;sv(U);start()};
   if(U.sched){var lk=el("a","lnk","Cancelar");lk.onclick=function(){start()};b.appendChild(lk)}
   pk.onclick=function(){fi.click()};
   fi.onchange=function(){if(fi.files[0])readImg(fi.files[0],st,function(S){D=D.concat(S);draw()})};
   getS().then(async function(s){var l=null;try{l=s&&await s.limits()}catch(e){}if(l&&l.images)pk.hidden=false});
 }
+function weekUI(){var g=$("gate");g.innerHTML="";g.hidden=false;$("app").hidden=true;var b=el("div","gbox"),tot=0;g.appendChild(b);b.appendChild(el("div","gname","Próximos 7 días"));for(var k=0;k<7;k++){var x=new Date();x.setHours(12,0,0,0);x.setDate(x.getDate()+k);var d=x.getDay(),ds=dstr(x),L=day(d,ds).filter(function(c){return !isOff(ds,c)}),r=el("div","cl"),t=el("div");L.forEach(function(c){tot+=c.e-c.s});t.appendChild(el("b","",(k?DN[d]:"Hoy")+" "+x.getDate()));t.appendChild(el("span","",L.length?L.map(function(c){return f(c.s)+"–"+f(c.e)+" "+c.n}).join(" · "):"Libre"));r.appendChild(t);b.appendChild(r)}b.appendChild(el("p","note","Total: "+dur(tot)));var lk=el("a","lnk","Volver");lk.onclick=function(){start()};b.appendChild(lk)}
 document.addEventListener("pointerdown",unlock);
 $("boot").insertAdjacentHTML("afterbegin",MARK("mb"));
 setTimeout(function(){var b=$("boot");if(b){b.classList.add("off");setTimeout(function(){b.remove()},700)}},800);
